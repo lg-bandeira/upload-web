@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { uploadFileToStorage } from "../http/upload-file-to-storage";
 
 export type Upload = {
   name: string;
@@ -11,6 +12,16 @@ type UploadState = {
 };
 
 export const useUploads = create<UploadState>((set, get) => {
+  async function processUpload(uploadId: string) {
+    const upload = get().uploads.get(uploadId);
+
+    if (!upload) {
+      return;
+    }
+
+    await uploadFileToStorage({ file: upload.file });
+  }
+
   function addUploads(files: File[]) {
     for (const file of files) {
       const uploadId = crypto.randomUUID();
@@ -25,6 +36,8 @@ export const useUploads = create<UploadState>((set, get) => {
           uploads: state.uploads.set(uploadId, upload),
         };
       });
+
+      processUpload(uploadId);
     }
   }
 
