@@ -1,1 +1,36 @@
 @import "tailwindcss";
+
+/* 1. CSS @property for animation */
+@property --border-angle {
+  inherits: false;
+  initial-value: 0deg;
+  syntax: "<angle>";
+}
+
+/* 2. Theme Extensions using @theme */
+@theme {
+  /* Extend opacity scale: Creates .opacity-2 */
+  --opacity-2: 0.02;
+
+  /* Extend font size scale: Creates .text-xxs */
+  --text-xxs: 0.625rem;
+
+  /* Extend font family scale: Creates .font-sans */
+  /* This requires referencing the default sans-serif stack which is available as a CSS variable */
+  --font-sans: Inter, var(--font-family-sans);
+
+  /* Extend box shadow scale: Creates .shadow-shape and .shadow-shape-content */
+  --shadow-shape: 0px 8px 8px rgba(0, 0, 0, 0.1), 0px 4px 4px rgba(0, 0, 0, 0.1), 0px 2px 2px rgba(0, 0, 0, 0.1), 0px 0px 0px 1px rgba(0, 0, 0, 0.1), inset 0px 0px 0px 1px rgba(255, 255, 255, 0.03),
+    inset 0px 1px 0px rgba(255, 255, 255, 0.03);
+  --shadow-shape-content: 0px 0px 0px 1px rgba(0, 0, 0, 0.25), inset 0px 1px 0px rgba(255, 255, 255, 0.02), inset 0px 0px 0px 1px rgba(255, 255, 255, 0.02);
+
+  /* Define the keyframes */
+  @keyframes border {
+    to {
+      --border-angle: 360deg;
+    }
+  }
+
+  /* Define the animation utility: Creates .animate-border */
+  --animate-border: border 2s linear infinite;
+}

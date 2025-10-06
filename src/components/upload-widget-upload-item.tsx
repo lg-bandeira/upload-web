@@ -17,7 +17,7 @@ export function UploadWidgetUploadItem() {
           <span>screenshot.png</span>
         </span>
 
-        <span className="text-xs text-zinc-400 flex gap-1.5 items-center">
+        <span className="text-xxs text-zinc-400 flex gap-1.5 items-center">
           <span className="line-through">3MB</span>
 
           <div className="size-1 rounded-full bg-zinc-700"></div>
