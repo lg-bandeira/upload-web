@@ -1,11 +1,14 @@
 import { create } from "zustand";
 import { uploadFileToStorage } from "../http/upload-file-to-storage";
+import { CanceledError } from "axios";
 
 export type Upload = {
   name: string;
   file: File;
   abortController: AbortController;
   status: "progress" | "success" | "error" | "canceled";
+  originalSizeInBytes: number;
+  uploadSizeInBytes: number;
 };
 
 type UploadState = {
@@ -23,7 +26,22 @@ export const useUploads = create<UploadState>((set, get) => {
     }
 
     try {
-      await uploadFileToStorage({ file: upload.file }, { signal: upload.abortController.signal });
+      await uploadFileToStorage(
+        {
+          file: upload.file,
+          onProgress: (sizeInBytes) => {
+            set((state) => {
+              return {
+                uploads: state.uploads.set(uploadId, {
+                  ...upload,
+                  uploadSizeInBytes: sizeInBytes,
+                }),
+              };
+            });
+          },
+        },
+        { signal: upload.abortController.signal }
+      );
 
       set((state) => {
         return {
@@ -34,6 +52,19 @@ export const useUploads = create<UploadState>((set, get) => {
         };
       });
     } catch (error) {
+      if (error instanceof CanceledError) {
+        set((state) => {
+          return {
+            uploads: state.uploads.set(uploadId, {
+              ...upload,
+              status: "canceled",
+            }),
+          };
+        });
+
+        return;
+      }
+
       set((state) => {
         return {
           uploads: state.uploads.set(uploadId, {
@@ -53,15 +84,6 @@ export const useUploads = create<UploadState>((set, get) => {
     }
 
     upload.abortController.abort();
-
-    set((state) => {
-      return {
-        uploads: state.uploads.set(uploadId, {
-          ...upload,
-          status: "canceled",
-        }),
-      };
-    });
   }
 
   function addUploads(files: File[]) {
@@ -74,6 +96,8 @@ export const useUploads = create<UploadState>((set, get) => {
         file,
         abortController,
         status: "progress",
+        originalSizeInBytes: file.size,
+        uploadSizeInBytes: 0,
       };
 
       set((state) => {
